@@ -1,0 +1,131 @@
+
+Goals for Talk
+--------------
+Streaming
+Obversables
+FlatMap
+BackPressure
+Read Essence and Origins of FRP
+Talk about Popularity in Android
+Why? Use this?  
+Cold vs. Hot Observables
+When to use Observables and when Not to use observables.
+Are they lazy?
+Scheduler?
+Does it work on Websites?
+
+
+
+Reactive X for Java
+RX for Java
+
+My name is Daniel Hinojosa, and this is a presentation on the Reactive Extensions for Java called RXJava.
+
+<Reactive Extensions Slide, Reactive.io>
+
+Reactive extensions is a library for creating asynchronous and event-based applications using Observables with implementations in a number of languages and that's where our story begins.
+
+<Show Gang of Four Slide>
+
+We know this book fairly well. It's the gang of four book. Or Design Patterns Elements of Reusable Software. While patterns had been used extensively before this book, we know this book was the catalog of such patterns, and one of those patterns....
+
+<Show Classic Observer Pattern>
+
+Is the Observer Pattern. Classified as a Behavioral Pattern, the pattern defines a one to many dependency between objects so that when an object changes state all its dependents are notified immediately.
+
+<Show UML Diagram>
+
+The Subject of course is the source of all events. The subject also holds references to the subscribers, or objects that wish to know when something has changed.  This is Reactive 1994 Style.  All subscribers that wish to be notified of any new information must register itself with the Subject.  Every Subject has some kind of Notify method that triggers the calling of those subscribers with update() a method on each of the subscribers.  The classic way, is that each observer is merely "tickled" into knowing something has changed.  When notified, each Observer, again using classic means is merely notified, must keep the reference to the Subject so as to query the new state of the Subject.
+
+<Show 2016 Slide>
+
+Times have changed
+
+There have been various additions to languages, and in particularly in Java, that change the way we solve problems.  Three of those off are...
+
+<Show Generics Slide>
+
+Generics..Generics facilitates generic programming which brought type safety and the ability to deal with collections without a lot of casting madness, and allows the programmer to deal much more with generic algorithms without relying on the specific type.
+
+<Show Functions Slide>
+
+Functions or Lambdas...which are first class verbs, which we can elegantly encode an expression and facilitates all necessary functional operations like map, flatMap, filter. This became available in Java 8.
+
+<Show Futures Slide>
+A Future is an asynchronous computation that is computed on another thread. Included with Java 5, JSR 166 brought the concept of not only Futures, Pools, Queues, and Concurrent Collections.
+
+<Show Observer Pattern (Eye), Generics (<>), Functions(f) and Futures(Lila from Futurama, or Fry looking puzzled, in succession>
+
+So we have all these elements, so we take all these elements and merge them into a solution.
+
+<Show The Previous Slide merge into JavaRX Slide>
+
+JavaRX is the ReactiveX implementation in the Java Programming Language. That combines all the modern elements we just discussed. It also shields us from mangling with time sinks like
+
+<Show Time Sink Items Slide>
+
+Threading, Synchronization, Thread-Safety, Concurrent Data Structures, and non-blocking I/O. Let's start of with the players of how we are to work with RXJava.
+
+<The Players>
+
+<Observables Slide>
+The Observable is the source of information, the well from which information is obtained, this could information from a web service, a thermometer in a silo, a speedometer in a vehicle, or so on.
+
+<Why Observables Slide>
+So why, Observables...
+
+<Composability Slide>
+This about two sources of information. One from a weather webservice, and the other from a geological web service, and we want to provide not only the weather of a certain city, but whether the ground is shaking underneath.  What can we do with that information, and what if the weather service is somewhat faster than the geological service? Much of this worry is negated by Observables since much of that plumbing is taken care of for you.
+
+<Manageabilty Slide>
+When it comes to processing asynchronous calls concurrently, mangling Futures can be a nightmare. As it stands the original Java 5, made processing those Futures difficult. The Guava library remedied much of that with callbacks.  Other languages created wrappers around those futures to manage the results better.  JavaRX just uses functions to manage.  This makes it easier not only when you are developing but also maintaining your code.
+
+<Readability Slide>
+As we will see shortly, Observable code is readable. It is matter of just chaining functions together to create a solution.
+
+<Streamability Slide>
+These Observables can also be streamed, possibly infinitely, and this is powerful. We in essence can take these infinite streams and process them with various functions and subscribers and compose solutions. A physical analogy can be the ...
+
+<Rube Goldberg Machine Slide>
+
+I think you've seen these before.  Obviously there is a lot of setup for these kind of machines, and the name of the game for JavaRX is too setup you constructs to react when the ball or domino or dart is going to affect what you are looking to do.
+
+<Pushing Data Slide>
+Observables push data, we do not pull from it. If no one is listening so be it.  But if they are they will be provided with the information.  Since Observables can possibly be streams or single scalar values.
+
+<Event Iterable Observable Slide>
+
+Observables mimic the behavior of an Iterable, but as opposed to an iterable being a pull, Observable is push with these methods.
+
+<An Observable Can Be Anything>
+
+Observables can come from anywhere, whatever the source is, it is up to you.
+
+<An Observable Is Always Asynchronous>
+
+It doesn't matter how you implement the Observable. It is your source, do you wish to block? Fine. Do not block? Fine too. Does it implement NIO, Actors, Other Event Busses, RPC, JMS, etc?  Doesn't matter, you master your domain when it comes to create a Source.
+
+<Demo>
+
+<Maven Dependency in pom.xml>
+
+
+
+
+
+
+
+
+
+<Show Links and Credits>
+Reactive.io
+Design Patterns: Elements of Reusable Object-Oriented Software
+Book by Erich Gamma, John Vlissides, Ralph Johnson, and Richard Helm
+Head First Java 2nd Edition
+Book by Bert Bates and Kathy Sierra
+ https://github.com/conal/talk-2015-essence-and-origins-of-frp
+ http://reactivex.io/intro.html
+
+
+
+
