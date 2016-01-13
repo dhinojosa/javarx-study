@@ -35,4 +35,10 @@ public class ConditionalObservableTest {
         Thread.sleep(10000);
     }
 
+    @Test
+    public void testDefaultIfEmpty() throws InterruptedException {
+        Observable<String> observable = Observable.<String>empty().defaultIfEmpty("None");
+        observable.subscribe(System.out::println);
+        Thread.sleep(3000);
+    }
 }

@@ -1,6 +1,7 @@
 
 Goals for Talk
 --------------
+History of RXJava
 Streaming
 Obversables
 FlatMap
@@ -13,6 +14,10 @@ When to use Observables and when Not to use observables.
 Are they lazy?
 Scheduler?
 Does it work on Websites?
+More Asynchrony...
+Thread
+Is all of it single threaded?
+Materialize
 
 
 
@@ -125,7 +130,7 @@ Head First Java 2nd Edition
 Book by Bert Bates and Kathy Sierra
  https://github.com/conal/talk-2015-essence-and-origins-of-frp
  http://reactivex.io/intro.html
-
+http://www.grahamlea.com/2014/07/rxjava-threading-examples/
 
 
 
