@@ -18,6 +18,10 @@ More Asynchrony...
 Thread
 Is all of it single threaded?
 Materialize
+Subject and Observer Relationship
+Reactive Streams
+Can Thread Locks be Caused?
+What do you use RX for?
 
 
 
@@ -131,6 +135,6 @@ Book by Bert Bates and Kathy Sierra
  https://github.com/conal/talk-2015-essence-and-origins-of-frp
  http://reactivex.io/intro.html
 http://www.grahamlea.com/2014/07/rxjava-threading-examples/
-
+http://stackoverflow.com/questions/31276164/rxjava-schedulers-use-cases
 
 

@@ -29,7 +29,9 @@ public class BasicObservableTest {
 
     @Test
     public void testDefer() throws InterruptedException {
-        Observable<LocalTime> localTimeObservable = Observable.defer(() -> Observable.just(LocalTime.now())).repeat(3);
+        Observable<LocalTime> localTimeObservable =
+                Observable.defer(() -> Observable
+                        .just(LocalTime.now())).repeat(3);
         localTimeObservable.subscribe(System.out::println);
         Thread.sleep(3000);
         localTimeObservable.subscribe(System.out::println);
@@ -42,7 +44,8 @@ public class BasicObservableTest {
         Observable<String> stringObservable = Observable.from(ticker);
         stringObservable.flatMap(s ->
                 Observable.from(
-                        TickerPriceFinder.create().getPrice(s))).subscribe(System.out::println);
+                        TickerPriceFinder.create()
+                                .getPrice(s))).subscribe(System.out::println);
     }
 
     @Test
