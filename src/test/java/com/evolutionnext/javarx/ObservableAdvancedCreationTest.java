@@ -1,5 +1,6 @@
 package com.evolutionnext.javarx;
 
+import org.assertj.core.util.Lists;
 import org.junit.Test;
 import rx.Observable;
 import rx.functions.Func0;
@@ -8,24 +9,21 @@ import rx.functions.Func3;
 import rx.functions.FuncN;
 import rx.util.async.Async;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-public class ObservableCreationTest {
-    @Test
-    public void testHandMadeObservable() throws InterruptedException {
-        Observable<Integer> observable = Observable.create(
-                o -> {
-                    o.onNext(1);
-                    o.onNext(2);
-                    o.onNext(3);
-                    o.onCompleted();
-                }
-        );
+public class ObservableAdvancedCreationTest {
 
+    @Test
+    public void testJust() throws InterruptedException {
+        Observable<Integer> observable = Observable.just(10);
         observable.subscribe(System.out::println);
         Thread.sleep(2000);
     }
@@ -38,10 +36,15 @@ public class ObservableCreationTest {
     }
 
     @Test
-    public void testJust() throws InterruptedException {
-        Observable<Integer> observable = Observable.just(10);
-        observable.subscribe(System.out::println);
-        Thread.sleep(2000);
+    public void testInterval() throws InterruptedException {
+        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS).map(x -> {
+            System.out.println("Thread Observable: " + Thread.currentThread().getName());
+            return x + 1;
+        });
+        Thread.sleep(1000);
+        observable.subscribe(x -> System.out.println("Observable 1: " + x));
+        observable.subscribe(x -> System.out.println("Observable 2: " + x));
+        Thread.sleep(10000);
     }
 
     @Test
@@ -50,10 +53,9 @@ public class ObservableCreationTest {
         //observer subscribes to the resulting Observable.
         //Multiple subscriptions to this Observable
         //observe the same return value
-
         Observable<Integer> observable = Async.start(() -> {
             System.out.format("Running Function in Thread %s\n",
-                    Thread.currentThread().getId());
+                    Thread.currentThread().getName());
             return 50;
         });
         System.out.println("Observable Created");
@@ -171,7 +173,6 @@ public class ObservableCreationTest {
         // "You might also look into the RxJava library, as its processing model
         // lends itself better to this kind of "stream forking"." -- Brian Goetz!
 
-
         FuncN<Observable<Integer>> observableFunction =
                 Async.asyncFunc(args -> {
                     System.out.format("Running Function in Thread %s\n",
@@ -190,6 +191,66 @@ public class ObservableCreationTest {
         observable2.subscribe(System.out::println);
         observable1.subscribe(System.out::println);
         observable2.subscribe(System.out::println);
+        Thread.sleep(2000);
+    }
+
+
+    @Test
+    public void createObservableFromFuture() {
+        ExecutorService executorService = Executors.newFixedThreadPool(4);
+        Observable<Integer> integerObservable = Observable.from(executorService.submit(() -> {
+            System.out.println("In Observable:" + Thread.currentThread().getName());
+            Thread.sleep(4000);
+            return 40 + 100;
+        }));
+
+        integerObservable.subscribe(x -> {
+            System.out.println("In Subscription: " + Thread.currentThread().getName());
+            System.out.println("Recieved:" + x);
+        });
+    }
+
+    @Test
+    public void createObservableFromIterable() {
+        List<Integer> numberOfItems = Lists
+                .newArrayList(3,5,3,1,4,5,6,8,4,5,2,1,5,3,2);
+        Observable<Integer> integerObservable = Observable.from(numberOfItems);
+
+        integerObservable.subscribe(x -> {
+            System.out.println("In Subscription: " + Thread.currentThread().getName());
+            System.out.println("Received:" + x);
+        });
+    }
+
+    @Test
+    public void createObservableFromArrays() {
+        Integer[] numberOfItems =
+                new Integer[]{4, 3, 1, 4, 5, 3, 1, 10, 40, 110, 44};
+        Observable<Integer> integerObservable = Observable.from(numberOfItems);
+        integerObservable.subscribe(x -> {
+            System.out.println("In Subscription: " + Thread.currentThread().getName());
+            System.out.println("Received:" + x);
+        });
+    }
+
+    @Test
+    public void createObservableEmpty() {
+        Observable<Integer> empty = Observable.empty();
+        empty.subscribe(System.out::println);
+    }
+
+    @Test
+    public void createObservableNever() throws InterruptedException {
+        Observable<Integer> empty = Observable.never();
+        empty.subscribe(System.out::println);
+        Thread.sleep(100000);
+    }
+
+    @Test
+    public void createObservableError() throws InterruptedException {
+        Observable<Integer> empty = Observable
+                .error(new IllegalArgumentException("This just ain't right"));
+        empty.subscribe(System.out::println, Throwable::printStackTrace);
         Thread.sleep(2000);
     }
 }
