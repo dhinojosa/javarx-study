@@ -3,6 +3,7 @@ package com.evolutionnext.javarx;
 import org.junit.Before;
 import org.junit.Test;
 import rx.Observable;
+import rx.Scheduler;
 import rx.schedulers.Schedulers;
 
 import java.util.concurrent.TimeUnit;
@@ -85,7 +86,8 @@ public class ObservableBackpressureTest {
     @Test
     public void testBackPressureWithOnBackpressureLatest() throws InterruptedException {
         crazedObservable.onBackpressureLatest()
-                .observeOn(Schedulers.newThread()).subscribe(n -> {
+                .observeOn(Schedulers.newThread())
+                .subscribeOn(Schedulers.newThread()).subscribe(n -> {
             try {
                 Thread.sleep(5); //Wait to fill the buffer some more.
             } catch (InterruptedException e) {

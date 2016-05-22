@@ -22,12 +22,16 @@ public class SchedulerTest {
     public void setUp() throws Exception {
         source = Observable.create(
                 o -> {
-                    System.out.format("Invoked on threadId:%d\n", Thread.currentThread().getId());
+                    System.out.format(
+                            "Source begins: invoked on threadName:%s\n",
+                            Thread.currentThread().getName());
                     o.onNext(1);
                     o.onNext(2);
                     o.onNext(3);
                     o.onCompleted();
-                    System.out.format("Finished on threadId:%d\n", Thread.currentThread().getId());
+                    System.out.format(
+                            "Finished on threadName:%s\n",
+                            Thread.currentThread().getName());
                 }
         );
     }
@@ -36,42 +40,52 @@ public class SchedulerTest {
     public void testProofThatAllIsSingleThreaded() throws InterruptedException {
         //RX is single threaded
         //Translated from: http://www.introtorx.com/Content/v1.0.10621.0/15_SchedulingAndThreading.html
-        System.out.format("Starting on threadId:%d\n", Thread.currentThread().getId());
+        System.out.format("Starting on threadName:%s\n",
+                Thread.currentThread().getName());
 
         source.subscribe(i ->
-                System.out.format("Received %d on threadId:%d\n", i, Thread.currentThread().getId()),
+                System.out.format("Received %d on threadName:%s\n", i,
+                        Thread.currentThread().getName()),
                 Throwable::printStackTrace,
-                () -> System.out.format("Completed on threadId:%d\n", Thread.currentThread().getId()));
+                () -> System.out.format("Completed on threadName:%s\n",
+                        Thread.currentThread().getName()));
+
+        System.out.format("Ending on threadName:%s\n",
+                Thread.currentThread().getName());
         Thread.sleep(2000);
     }
 
     @Test
-    public void testMultithreadedWithScheduler() throws InterruptedException {
-        System.out.format("Starting on threadId:%d\n", Thread.currentThread().getId());
+    public void testMultithreadedWithSubscribeOnScheduler() throws InterruptedException {
+        System.out.format("Starting on threadName:%s\n",
+                Thread.currentThread().getName());
         source
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(i ->
-                        System.out.format("Received %d on threadId:%d\n",
-                                i, Thread.currentThread().getId()),
+                        System.out.format("Received %d on threadName:%s\n",
+                                i, Thread.currentThread().getName()),
                 Throwable::printStackTrace,
-                () -> System.out.format("Completed on threadId:%d\n",
-                        Thread.currentThread().getId()));
+                () -> System.out.format("Completed on threadName:%s\n",
+                        Thread.currentThread().getName()));
 
+        System.out.format("Ending on threadName:%s\n",
+                Thread.currentThread().getName());
         Thread.sleep(2000);
     }
 
     @Test
-    public void testSchedulerElsewhere() throws InterruptedException {
-        System.out.format("Starting on threadId:%d\n", Thread.currentThread().getId());
-        source
+    public void testMultithreadedWithObserveOn() throws InterruptedException {
+        System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
+        source.observeOn(Schedulers.computation())
                 .subscribeOn(Schedulers.newThread())
                 .subscribe(i ->
-                                System.out.format("Received %d on threadId:%d\n",
-                                        i, Thread.currentThread().getId()),
+                                System.out.format("OnNext %d on threadName:%s\n",
+                                        i, Thread.currentThread().getName()),
                         Throwable::printStackTrace,
-                        () -> System.out.format("Completed on threadId:%d\n",
-                                Thread.currentThread().getId()));
+                        () -> System.out.format("Completed on threadName:%s\n",
+                                Thread.currentThread().getName()));
 
+        System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
         Thread.sleep(2000);
     }
 }

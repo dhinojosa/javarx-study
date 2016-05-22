@@ -3,12 +3,12 @@ package com.evolutionnext.javarx;
 import com.github.davidmoten.rx.Functions;
 import org.junit.Test;
 import rx.Observable;
+import rx.math.operators.OperatorMinMax;
 import rx.observables.MathObservable;
 
 import java.util.ArrayList;
-import java.util.Random;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * The following tests require the rxjava-math package
@@ -44,45 +44,52 @@ public class ObservableMathematicalAggregateTest {
     }
 
     @Test
-    public void testConcat() {
-        ExecutorService executorService = Executors.newCachedThreadPool();
-
-        Observable<Integer> observable1 = Observable
-                .from(executorService.submit(() -> {
-                    System.out.format
-                            ("In Observable 1: In Thread %s Going To Sleep\n",
-                                    Thread.currentThread().getId());
-                    Thread.sleep(5000);
-                    System.out.format
-                            ("In Observable 1: In Thread %s Waking Up\n",
-                                    Thread.currentThread().getId());
-                    return 3000;
-                }));
-
-        Observable<Integer> observable2 = Observable
-                .from(executorService.submit(() -> {
-                    System.out.format(
-                            "In Observable 2: In Thread %s Going To Sleep\n",
-                            Thread.currentThread().getId());
-                    Thread.sleep(1000);
-                    System.out.format(
-                            "In Observable 2: In Thread %s Waking Up\n",
-                            Thread.currentThread().getId());
-                    return 9000;
-                }));
-
-        Observable.concat(observable1, observable2)
-                .subscribe(System.out::println);
+    public void maxBy() {
+        List list1 = Arrays.asList(1, 2, 4, 5, 6);
+        List list2 = Arrays.asList(1, 2, 4);
+        List list3 = Arrays.asList(1, 2);
+        List list4 = Arrays.asList(1, 2, 10, 11, 16, 44, 20, 19);
+        Observable<List<List>> listObservable =
+                OperatorMinMax.maxBy
+                        (Observable.just(list1, list2, list3, list4),
+                                List::size);
+        listObservable.subscribe(System.out::println);
     }
-
 
     @Test
     public void testCount() {
-        Random random = new Random();
-        Observable<Integer> randomObservable = Observable.fromCallable(() -> 1 + random.nextInt(49));
-        randomObservable.flatMap(x -> Observable.range(0, x)).count().subscribe(System.out::println);
+        Observable.just(1, 5, 6, 4, 10, 22).count().subscribe(System.out::println);
     }
 
+    @Test
+    public void testReduce() {
+        Observable.range(1, 5).reduce((next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
 
-    //http://www.gutenberg.org/cache/epub/2600/pg2600.txt
+    @Test
+    public void testReduceWithSeed() {
+        Observable.range(1, 5).reduce(10, (next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testScan() {
+        Observable.range(1, 5).scan((next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testScanWithSeed() {
+        Observable.range(1, 5).scan(10, (next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testCollect() {
+        Observable.range(1, 5).collect(
+                () -> new ArrayList<>(),
+                (list, item) -> {list.add(item);})
+                .subscribe(System.out::println);
+    }
 }

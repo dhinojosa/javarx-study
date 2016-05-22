@@ -7,11 +7,13 @@ import rx.functions.Func0;
 import rx.functions.Func2;
 import rx.functions.Func3;
 import rx.functions.FuncN;
+import rx.schedulers.Schedulers;
 import rx.util.async.Async;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -37,13 +39,10 @@ public class ObservableAdvancedCreationTest {
 
     @Test
     public void testInterval() throws InterruptedException {
-        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS).map(x -> {
-            System.out.println("Thread Observable: " + Thread.currentThread().getName());
-            return x + 1;
-        });
+        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS);
+        observable.subscribe(x -> System.out.println("Observer 1: " + x));
         Thread.sleep(1000);
-        observable.subscribe(x -> System.out.println("Observable 1: " + x));
-        observable.subscribe(x -> System.out.println("Observable 2: " + x));
+        observable.subscribe(x -> System.out.println("Observer 2: " + x));
         Thread.sleep(10000);
     }
 
@@ -196,18 +195,31 @@ public class ObservableAdvancedCreationTest {
 
 
     @Test
-    public void createObservableFromFuture() {
+    public void createObservableFromFuture() throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
-        Observable<Integer> integerObservable = Observable.from(executorService.submit(() -> {
-            System.out.println("In Observable:" + Thread.currentThread().getName());
-            Thread.sleep(4000);
-            return 40 + 100;
-        }));
+        Observable<Integer> integerObservable = Observable.from(
+                executorService.submit(() -> {
+                    System.out.println("In Observable:" + Thread.currentThread().getName());
+                    Thread.sleep(4000);
+                    System.out.println("I had too much to drink");
+                    return 40 + 100;
+                }));
 
-        integerObservable.subscribe(x -> {
+        System.out.println("Now that that's running....");
+
+        integerObservable.subscribeOn(Schedulers.newThread()).subscribe(x -> {
             System.out.println("In Subscription: " + Thread.currentThread().getName());
-            System.out.println("Recieved:" + x);
+            System.out.println("Received:" + x);
         });
+
+        System.out.println("Cupcakes");
+
+        Thread.sleep(1000);
+        integerObservable.subscribe(x -> {
+             System.out.println("Recieved 2: " + x);
+        });
+
+        Thread.sleep(10000);
     }
 
     @Test
@@ -253,4 +265,24 @@ public class ObservableAdvancedCreationTest {
         empty.subscribe(System.out::println, Throwable::printStackTrace);
         Thread.sleep(2000);
     }
+
+    @Test
+    public void createInterval() throws InterruptedException {
+        Observable.interval(1, TimeUnit.SECONDS)
+                .map(x -> x + 1)
+                .subscribe(System.out::println);
+        Thread.sleep(4000);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+

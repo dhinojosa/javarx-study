@@ -18,11 +18,11 @@ public class ConditionalObservableTest {
 
     @Test
     public void testAmb() throws InterruptedException {
-        Observable<Integer> oneTo10 = Observable.range(1, 10)
+        Observable<Integer> oneTo10 = Observable.range(1, 5)
                 .delay(5, TimeUnit.SECONDS);
-        Observable<Integer> tenTo20 = Observable.range(30, 10)
+        Observable<Integer> tenTo20 = Observable.range(10, 10)
                 .delay(2, TimeUnit.SECONDS);
-        Observable<Integer> twentyTo30 = Observable.range(90, 10)
+        Observable<Integer> twentyTo30 = Observable.range(30, 10)
                 .delay(8, TimeUnit.SECONDS);
 
         Observable.amb(oneTo10, tenTo20, twentyTo30)
