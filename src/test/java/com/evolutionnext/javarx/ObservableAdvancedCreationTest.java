@@ -23,28 +23,6 @@ import java.util.stream.Stream;
 
 public class ObservableAdvancedCreationTest {
 
-    @Test
-    public void testJust() throws InterruptedException {
-        Observable<Integer> observable = Observable.just(10);
-        observable.subscribe(System.out::println);
-        Thread.sleep(2000);
-    }
-
-    @Test
-    public void testRange() throws InterruptedException {
-        Observable<Integer> observable = Observable.range(1, 20);
-        observable.subscribe(System.out::println);
-        Thread.sleep(2000);
-    }
-
-    @Test
-    public void testInterval() throws InterruptedException {
-        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS);
-        observable.subscribe(x -> System.out.println("Observer 1: " + x));
-        Thread.sleep(1000);
-        observable.subscribe(x -> System.out.println("Observer 2: " + x));
-        Thread.sleep(10000);
-    }
 
     @Test
     public void testStart() throws InterruptedException {
@@ -265,15 +243,6 @@ public class ObservableAdvancedCreationTest {
         empty.subscribe(System.out::println, Throwable::printStackTrace);
         Thread.sleep(2000);
     }
-
-    @Test
-    public void createInterval() throws InterruptedException {
-        Observable.interval(1, TimeUnit.SECONDS)
-                .map(x -> x + 1)
-                .subscribe(System.out::println);
-        Thread.sleep(4000);
-    }
-
 }
 
 

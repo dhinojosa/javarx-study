@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import rx.Observable;
 import rx.Scheduler;
+import rx.Subscriber;
 import rx.schedulers.Schedulers;
 
 import java.util.concurrent.TimeUnit;
@@ -15,19 +16,22 @@ public class ObservableBackpressureTest {
 
     @Before
     public void startUp() {
-        crazedObservable = Observable.create(s -> {
-            int i = 0;
-            //noinspection InfiniteLoopStatement
-            while (true) {
-                s.onNext(i);
-                i++;
+        crazedObservable = Observable.create(new Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> s) {
+                int i = 0;
+                //noinspection InfiniteLoopStatement
+                while (true) {
+                    s.onNext(i);
+                    i++;
+                }
             }
         });
     }
 
     @Test
     public void testBackPressure() throws InterruptedException {
-        crazedObservable.observeOn(Schedulers.newThread()).subscribe(n -> {
+        crazedObservable.observeOn(Schedulers.newThread()).subscribeOn(Schedulers.newThread()).subscribe(n -> {
             try {
                 Thread.sleep(5); //Wait to fill the buffer some more.
             } catch (InterruptedException e) {

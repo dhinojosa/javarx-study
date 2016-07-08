@@ -63,13 +63,17 @@ public class ObservableMathematicalAggregateTest {
 
     @Test
     public void testReduce() {
-        Observable.range(1, 5).reduce((next, total) -> total * next)
-                .subscribe(System.out::println);
+        Observable.range(1, 5).reduce((total, next) -> {
+            System.out.print(next);
+            System.out.print(" ");
+            System.out.println(total);
+            return total * next;
+        }).subscribe(System.out::println);
     }
 
     @Test
     public void testReduceWithSeed() {
-        Observable.range(1, 5).reduce(10, (next, total) -> total * next)
+        Observable.range(1, 5).reduce(10, (total, next) -> total * next)
                 .subscribe(System.out::println);
     }
 
@@ -88,8 +92,8 @@ public class ObservableMathematicalAggregateTest {
     @Test
     public void testCollect() {
         Observable.range(1, 5).collect(
-                () -> new ArrayList<>(),
-                (list, item) -> {list.add(item);})
+                ArrayList::new,
+                ArrayList::add)
                 .subscribe(System.out::println);
     }
 }
