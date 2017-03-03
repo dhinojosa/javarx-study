@@ -76,8 +76,8 @@ public class SchedulerTest {
     @Test
     public void testMultithreadedWithObserveOn() throws InterruptedException {
         System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
-        source.observeOn(Schedulers.computation())
-                .subscribeOn(Schedulers.newThread())
+        source.subscribeOn(Schedulers.newThread())
+                .observeOn(Schedulers.computation())
                 .subscribe(i ->
                                 System.out.format("OnNext %d on threadName:%s\n",
                                         i, Thread.currentThread().getName()),

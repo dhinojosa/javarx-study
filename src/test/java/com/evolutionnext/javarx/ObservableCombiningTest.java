@@ -24,17 +24,20 @@ public class ObservableCombiningTest {
         Observable<String> observable1 =
                 Observable.interval(100, TimeUnit.MILLISECONDS)
                 .map(x -> {
-                    System.out.println("Hello1" + LocalDateTime.now());return "O1:" + x;});
+                    return "O1:" + x;});
         Observable<String> observable2 =
                 Observable.interval(150, TimeUnit.MILLISECONDS)
                 .map(x -> {
-                    System.out.println("Hello2" + LocalDateTime.now());return "O2:" + x;});
+                    return "O2:" + x;});
 
-        observable1.mergeWith(observable2).take(5).subscribe(System.out::println);
+        observable1.mergeWith(observable2).take(5)
+                .subscribe(System.out::println);
         Thread.sleep(1000);
-        System.out.println("Midway" + LocalDateTime.now());
-        observable1.mergeWith(observable2).take(5).subscribe(System.out::println);
-        Thread.sleep(10000);
+
+
+//        System.out.println("Midway" + LocalDateTime.now());
+//        observable1.mergeWith(observable2).take(5).subscribe(System.out::println);
+//        Thread.sleep(10000);
     }
 
     @Test
@@ -49,13 +52,14 @@ public class ObservableCombiningTest {
         Thread.sleep(20000);
     }
 
+    //Ambiguous RXJava
     @Test
     public void testAmb() throws InterruptedException {
-        Observable<Integer> oneTo10 = Observable.range(1, 5)
+        Observable<Integer> oneTo10 = Observable.range(1, 10)
                 .delay(5, TimeUnit.SECONDS);
         Observable<Integer> tenTo20 = Observable.range(10, 10)
                 .delay(2, TimeUnit.SECONDS);
-        Observable<Integer> twentyTo30 = Observable.range(30, 10)
+        Observable<Integer> twentyTo30 = Observable.range(20, 10)
                 .delay(8, TimeUnit.SECONDS);
 
         Observable.amb(oneTo10, tenTo20, twentyTo30)

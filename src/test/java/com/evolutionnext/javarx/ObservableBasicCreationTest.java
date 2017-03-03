@@ -8,6 +8,7 @@ import rx.Subscriber;
 import rx.functions.Action0;
 import rx.functions.Action1;
 import rx.functions.Func0;
+import rx.functions.Func1;
 import rx.observables.GroupedObservable;
 import rx.observables.StringObservable;
 
@@ -17,10 +18,7 @@ import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.IllegalFormatException;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class ObservableBasicCreationTest {
 
@@ -28,20 +26,23 @@ public class ObservableBasicCreationTest {
 
     @Test
     public void testManualObservableWithManualObserver() throws InterruptedException {
-        Observable<Integer> observable = Observable.create(new OnSubscribe<Integer>() {
-            @Override
-            public void call(Subscriber<? super Integer> subscriber) {
-                System.out.println("1:" + Thread.currentThread().getName());
-                System.out.println("Starting the call");
-                subscriber.onNext(40);
-                subscriber.onNext(45);
-                subscriber.onError(new IllegalArgumentException("Huh?"));
-            }
-        });
+        Observable<Integer> observable = Observable
+                .create(new OnSubscribe<Integer>() {
+                    @Override
+                    public void call(Subscriber<? super Integer> subscriber) {
+                        System.out.println
+                                ("1:" + Thread.currentThread().getName());
+                        System.out.println("Starting the call");
+                        subscriber.onNext(40);
+                        subscriber.onNext(45);
+                        subscriber.onCompleted();
+                    }
+                });
 
         System.out.println("Observable Created");
         System.out.println("2:" + Thread.currentThread().getName());
 
+        //Lots of code
 
         observable.subscribe(new Observer<Integer>() {
             @Override
@@ -57,7 +58,8 @@ public class ObservableBasicCreationTest {
 
             @Override
             public void onNext(Integer x) {
-                System.out.println("On Next:" + Thread.currentThread().getName());
+                System.out.println("On Next:" +
+                        Thread.currentThread().getName());
                 System.out.printf("On Next: %d\n", x);
             }
         });
@@ -95,47 +97,25 @@ public class ObservableBasicCreationTest {
 
     @Test
     public void testManualObservableWithAction1() {
-        Observable<Integer> a = Observable.create(s -> {
+        Observable.create(s -> {
                     s.onNext(40);
                     s.onNext(45);
                     s.onCompleted();
                 }
-        );
-        a.subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer x) {
-                System.out.println(x);
-            }
-        });
+        ).subscribe(System.out::println);
     }
 
 
     @Test
     public void testManualObservableWithAction1ForSuccessAndAction1ForException() {
-        Observable<Integer> a = Observable.create(s -> {
+       Observable.create(s -> {
                     s.onNext(40);
                     s.onNext(45);
                     s.onCompleted();
                 }
-        );
-
-        a.subscribe(new Action1<Integer>() {
-            @Override
-            public void call(Integer integer) {
-                System.out.println("integer = " + integer);
-            }
-        }, new Action1<Throwable>() {
-            @Override
-            public void call(Throwable throwable) {
-                System.out.println("Am I here?");
-                throwable.printStackTrace();
-            }
-        }, new Action0() {
-            @Override
-            public void call() {
-                System.out.println("We are done!");
-            }
-        });
+        ).subscribe(System.out::println,
+               Throwable::printStackTrace,
+                () -> System.out.println("We are done!"));
     }
 
     @Test
@@ -162,11 +142,22 @@ public class ObservableBasicCreationTest {
                 subscriber.onCompleted();
             }
         });
+
         a.subscribe(
-                integer -> System.out.println("Received: " + integer),
+                integer -> {
+                    System.out.println("Received: " + integer);
+                    throw new IllegalArgumentException("Oh no");
+                },
                 e -> {
                     e.printStackTrace();
-                    System.out.println();
+                    System.out.println("Got it! Nabbed it");
+                },
+                () -> System.out.println("Completed"));
+
+        a.subscribe(System.out::println,
+                e -> {
+                    System.out.println("Inside of 2nd Sub");
+                    e.printStackTrace();
                 },
                 () -> System.out.println("Completed"));
     }
@@ -195,12 +186,25 @@ public class ObservableBasicCreationTest {
         Thread.sleep(2000);
     }
 
+    @Test
+    public void testMap() {
+        Observable<Integer> integerObservable =
+                Observable.just(1, 2, 3);
+
+        Observable<String> stringObservable =
+                integerObservable
+                .map(integer -> "Hello: " + integer);
+
+        stringObservable
+                .subscribe(System.out::println);
+    }
 
     @Test
     public void testBasicFlatMap() throws InterruptedException {
-        Observable<Integer> a = Observable.just(50, 100, 122);
-//        Observable<Integer> b = a.flatMap(x -> Observable.just(x - 1, x, x + 1));
-        Observable<Integer> b = a.flatMap(x -> Observable.just(x - 1, x, x + 1));
+        Observable<Integer> a =
+                Observable.just(50, 100, 122);
+        Observable<Integer> b =
+                a.flatMap(x -> Observable.just(x - 1, x, x + 1));
 
         b.subscribe(System.out::println);
         System.out.println("-----------");
@@ -209,40 +213,43 @@ public class ObservableBasicCreationTest {
         Thread.sleep(2000);
     }
 
-
-
-    @Test
-    public void testBasicAdditionLambda() throws InterruptedException {
-        Observable<Integer> a = Observable.create(subscriber ->
-                {
-                    subscriber.onNext(40);
-                    subscriber.onNext(45);
-                    subscriber.onCompleted();
-                }
-        );
-        Observable<Integer> b = a.flatMap(x -> Observable.just(x + 1));
-        b.subscribe(System.out::println);
-        Thread.sleep(2000);
-    }
-
     @Test
     public void testFromWithFuture() throws InterruptedException {
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService =
+                Executors.newCachedThreadPool();
 
-        Observable<Integer> observable =
-                Observable.from(executorService.submit(() -> {
-                    Thread.sleep(3000);
-                    return 19;
-                }));
+        Future<Integer> future = executorService.submit(
+                new Callable<Integer>() {
+                    @Override
+                    public Integer call() throws Exception {
+                        System.out.println
+                                ("Thread name in future" +
+                                Thread.currentThread().getName());
+                        Thread.sleep(1000);
+                        return 19;
+                    }
+                });
 
-        observable.subscribe(System.out::println);
-        Thread.sleep(5000);
+        Observable.from(future).map(x -> x + 30)
+                .repeat(5)
+                .subscribe(System.out::println);
+
+        Thread.sleep(15000);
     }
 
     @Test
     public void testInterval() throws InterruptedException {
-        Observable.interval(1, TimeUnit.SECONDS).subscribe(System.out::println);
+        Observable<String> interval =
+                Observable.interval(1, TimeUnit.SECONDS).map(Long::toHexString);
+
+        interval.subscribe(lng ->
+                System.out.println("1: lng = " + lng));
+
         Thread.sleep(5000);
+        interval.subscribe(lng ->
+                System.out.println("2: lng = " + lng));
+
+        Thread.sleep(10000);
     }
 
     /**
@@ -253,8 +260,10 @@ public class ObservableBasicCreationTest {
     @Test
     public void testDefer() throws InterruptedException {
         Observable<LocalTime> localTimeObservable =
-                Observable.defer(() -> Observable
-                        .just(LocalTime.now())).repeat(3);
+                Observable.defer(
+                        () -> Observable
+                                .just(LocalTime.now()))
+                                   .repeat(3);
         localTimeObservable.subscribe(System.out::println);
         Thread.sleep(3000);
         System.out.println("Next Subscriber");
@@ -264,32 +273,49 @@ public class ObservableBasicCreationTest {
 
     @Test
     public void testRange() throws InterruptedException {
-        Observable<Integer> rangeObservable = Observable.range(0, 11);
+        Observable<Integer> rangeObservable =
+                Observable.range(10, 20);
+
         rangeObservable.subscribe(System.out::println);
+
         Thread.sleep(3000);
+
+        System.out.println("-------------");
         System.out.println("Next Subscriber");
-        rangeObservable.subscribe(System.out::println);
+        System.out.println("-------------");
+
+        rangeObservable
+                .map(x -> x * 4)
+                .repeat(5)
+                .subscribe(System.out::println);
     }
 
 
     @Test
     public void testTicker() throws InterruptedException {
         String[] ticker = {"MSFT", "GOOG", "YHOO", "APPL"};
-        Observable<String> stockObservable = Observable.from(ticker);
-        TickerPriceFinder tickerPriceFinder = TickerPriceFinder.create();
+        Observable<String> stockObservable =
+                Observable.from(ticker);
+        TickerPriceFinder tickerPriceFinder =
+                TickerPriceFinder.create();
         stockObservable
-                .flatMap(s -> Observable.from(tickerPriceFinder.getPrice(s)))
+                .flatMap(s ->
+                        Observable.from
+                                (tickerPriceFinder.getPrice(s)))
                 .subscribe(System.out::println);
     }
 
     @Test
     public void testTickerToList() throws InterruptedException {
         String[] ticker = {"MSFT", "GOOG", "YHOO", "APPL"};
-        Observable<String> originalObservable = Observable.from(ticker);
-        TickerPriceFinder tickerPriceFinder = TickerPriceFinder.create();
+        Observable<String> originalObservable =
+                Observable.from(ticker);
+        TickerPriceFinder tickerPriceFinder =
+                TickerPriceFinder.create();
         StringObservable.join(
                 originalObservable.flatMap(s ->
-                        Observable.from(tickerPriceFinder.getPrice(s))
+                        Observable.from(
+                                tickerPriceFinder.getPrice(s))
                 ).map(d -> String.format("%.2f", d)), ",")
                 .subscribe(System.out::println, Throwable::printStackTrace);
     }
@@ -302,18 +328,22 @@ public class ObservableBasicCreationTest {
                 "For any #clojure nerds playing with #ethereum my library Cloth now also creates an API for your Smart Contract"};
 
 
-        Observable<HashTag> hashTags = Observable.from(tweets).flatMap(x -> Observable.from(x.split(" ")))
+        Observable<HashTag> hashTags = Observable
+                .from(tweets)
+                .flatMap(x -> Observable.from(x.split(" ")))
                 .filter(x -> x.startsWith("#"))
-                .map(HashTag::new);
+                .map((tag) -> new HashTag(tag));
+
 
         hashTags
-                .collect(() -> new HashSet<HashTag>(), (set, e) -> set.add(e))
-                .subscribe((x) -> {
-                    System.out.println(x);
-                });
+                .collect(HashSet::new,
+                        HashSet::add)
+                .subscribe(System.out::println);
 
-        //Another Branch
-        hashTags.toSortedList().subscribe(new Observer<List<HashTag>>() {
+//        //Another Branch
+        Observable<List<HashTag>> listObservable = hashTags.toSortedList();
+
+        listObservable.subscribe(new Observer<List<HashTag>>() {
             @Override
             public void onCompleted() {
                 System.out.printf("Done");

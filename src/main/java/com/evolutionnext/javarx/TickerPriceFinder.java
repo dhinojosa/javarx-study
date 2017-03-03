@@ -24,7 +24,9 @@ public class TickerPriceFinder {
     }
 
     public Future<Double> getPrice(String name) {
-        return executorService.submit(() -> random.nextDouble() * 200.0);
+
+        return executorService.submit(
+                () -> random.nextDouble() * 200.0);
     }
 
     public static TickerPriceFinder create() {

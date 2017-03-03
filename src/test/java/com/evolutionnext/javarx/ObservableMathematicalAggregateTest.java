@@ -3,6 +3,7 @@ package com.evolutionnext.javarx;
 import com.github.davidmoten.rx.Functions;
 import org.junit.Test;
 import rx.Observable;
+import rx.functions.Func2;
 import rx.math.operators.OperatorMinMax;
 import rx.observables.MathObservable;
 
@@ -64,17 +65,22 @@ public class ObservableMathematicalAggregateTest {
     @Test
     public void testReduce() {
         Observable.range(1, 5).reduce((total, next) -> {
-            System.out.print(next);
+            System.out.print("next:" + next);
             System.out.print(" ");
-            System.out.println(total);
+            System.out.println("total:" + total);
             return total * next;
         }).subscribe(System.out::println);
     }
 
     @Test
     public void testReduceWithSeed() {
-        Observable.range(1, 5).reduce(10, (total, next) -> total * next)
-                .subscribe(System.out::println);
+        Observable.range(1, 5)
+                .reduce(0, (total, next) -> {
+                    System.out.print("next:" + next);
+                    System.out.print(" ");
+                    System.out.println("total:" + total);
+                    return total + next;
+                }).subscribe(System.out::println);
     }
 
     @Test
