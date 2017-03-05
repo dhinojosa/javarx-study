@@ -1,23 +1,22 @@
 package com.evolutionnext.javarx;
 
+import io.reactivex.Observable;
 import org.junit.Test;
-import rx.Observable;
 
-import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 /**
  * Demo 3: Standard Functional Operators
  */
-public class ObservableCombiningTest {
+public class CombinationTest {
 
     @Test
     public void testStartWith() throws InterruptedException {
         Observable<Integer> observable1 = Observable.range(10, 5);
-        observable1.startWith(1, 2, 3).subscribe(System.out::println);
+        observable1.startWith(Observable.just(1,4,5)).subscribe(System.out::println);
         Thread.sleep(3000);
     }
-
 
     @Test
     public void testMerge() throws InterruptedException {
@@ -33,11 +32,6 @@ public class ObservableCombiningTest {
         observable1.mergeWith(observable2).take(5)
                 .subscribe(System.out::println);
         Thread.sleep(1000);
-
-
-//        System.out.println("Midway" + LocalDateTime.now());
-//        observable1.mergeWith(observable2).take(5).subscribe(System.out::println);
-//        Thread.sleep(10000);
     }
 
     @Test
@@ -62,7 +56,7 @@ public class ObservableCombiningTest {
         Observable<Integer> twentyTo30 = Observable.range(20, 10)
                 .delay(8, TimeUnit.SECONDS);
 
-        Observable.amb(oneTo10, tenTo20, twentyTo30)
+        Observable.amb(Arrays.asList(oneTo10, tenTo20, twentyTo30))
                 .subscribe(System.out::println, Throwable::printStackTrace);
         Thread.sleep(10000);
     }
@@ -82,6 +76,4 @@ public class ObservableCombiningTest {
 
         Thread.sleep(10000);
     }
-
-
 }

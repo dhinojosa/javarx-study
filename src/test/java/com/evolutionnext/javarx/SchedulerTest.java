@@ -1,11 +1,13 @@
 package com.evolutionnext.javarx;
 
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
 import org.junit.Before;
 import org.junit.Test;
-import rx.Observable;
-import rx.Scheduler;
-import rx.Subscriber;
-import rx.schedulers.Schedulers;
+//import rx.Observable;
+//import rx.Scheduler;
+//import rx.Subscriber;
+//import rx.schedulers.Schedulers;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,7 +30,7 @@ public class SchedulerTest {
                     o.onNext(1);
                     o.onNext(2);
                     o.onNext(3);
-                    o.onCompleted();
+                    o.onComplete();
                     System.out.format(
                             "Finished on threadName:%s\n",
                             Thread.currentThread().getName());

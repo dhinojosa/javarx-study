@@ -1,15 +1,12 @@
 package com.evolutionnext.javarx;
 
-import com.github.davidmoten.rx.Functions;
+import io.reactivex.Flowable;
+import io.reactivex.Maybe;
+import io.reactivex.Observable;
 import org.junit.Test;
-import rx.Observable;
-import rx.functions.Func2;
-import rx.math.operators.OperatorMinMax;
 import rx.observables.MathObservable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * The following tests require the rxjava-math package
@@ -17,53 +14,26 @@ import java.util.List;
 public class ObservableMathematicalAggregateTest {
 
     @Test
-    public void testAverages() {
-        MathObservable.from(Observable.range(1, 10))
-                .averageInteger(Functions.identity())
-                .subscribe(System.out::println);
+    public void testAveragesUsingRawRxJava() {
+        Observable<Integer> range = Observable.range(1, 10);
+        Maybe<Integer> reduce = range.reduce((next, total) -> total + next);
+        Maybe<Long> result =
+                reduce.flatMap(total -> range.count().map(count -> total / count).toMaybe());
+        System.out.println(result.blockingGet());
     }
 
     @Test
-    public void testAveragesLong() {
-        MathObservable.from(Observable.range(5, 22))
-                .averageLong(Long::new)
-                .subscribe(System.out::println);
-    }
-
-    @Test
-    public void testAveragesFloat() {
-        MathObservable.from(Observable.range(5, 22))
-                .averageFloat(Float::new)
-                .subscribe(System.out::println);
-    }
-
-    @Test
-    public void testAveragesDouble() {
-        MathObservable.from(Observable.range(5, 22))
-                .averageDouble(Double::new)
-                .subscribe(System.out::println);
-    }
-
-    @Test
-    public void maxBy() {
-        List list1 = Arrays.asList(1, 2, 4, 5, 6);
-        List list2 = Arrays.asList(1, 2, 4);
-        List list3 = Arrays.asList(1, 2);
-        List list4 = Arrays.asList(1, 2, 10, 11, 16, 44, 20, 19);
-        Observable<List<List>> listObservable =
-                OperatorMinMax.maxBy
-                        (Observable.just(list1, list2, list3, list4),
-                                List::size);
-        listObservable.subscribe(System.out::println);
-    }
-
-    @Test
-    public void testCount() {
+    public void testCountObservable() {
         Observable.just(1, 5, 6, 4, 10, 22).count().subscribe(System.out::println);
     }
 
     @Test
-    public void testReduce() {
+    public void testCountFlowable() {
+        Flowable.just(1, 5, 6, 4, 10, 22).count().subscribe(System.out::println);
+    }
+
+    @Test
+    public void testReduceObservable() {
         Observable.range(1, 5).reduce((total, next) -> {
             System.out.print("next:" + next);
             System.out.print(" ");
@@ -73,7 +43,17 @@ public class ObservableMathematicalAggregateTest {
     }
 
     @Test
-    public void testReduceWithSeed() {
+    public void testReduceFlowable() {
+        Flowable.range(1, 5).reduce((total, next) -> {
+            System.out.print("next:" + next);
+            System.out.print(" ");
+            System.out.println("total:" + total);
+            return total * next;
+        }).subscribe(System.out::println);
+    }
+
+    @Test
+    public void testReduceObservableWithSeed() {
         Observable.range(1, 5)
                 .reduce(0, (total, next) -> {
                     System.out.print("next:" + next);
@@ -84,20 +64,51 @@ public class ObservableMathematicalAggregateTest {
     }
 
     @Test
-    public void testScan() {
+    public void testReduceFlowableWithSeed() {
+        Flowable.range(1, 5)
+                .reduce(0, (total, next) -> {
+                    System.out.print("next:" + next);
+                    System.out.print(" ");
+                    System.out.println("total:" + total);
+                    return total + next;
+                }).subscribe(System.out::println);
+    }
+
+    @Test
+    public void testScanObservable() {
         Observable.range(1, 5).scan((next, total) -> total * next)
                 .subscribe(System.out::println);
     }
 
     @Test
-    public void testScanWithSeed() {
+    public void testScanFlowable() {
+        Flowable.range(1, 5).scan((next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testScanWithSeedObservable() {
         Observable.range(1, 5).scan(10, (next, total) -> total * next)
                 .subscribe(System.out::println);
     }
 
     @Test
-    public void testCollect() {
+    public void testScanWithSeedFlowable() {
+        Flowable.range(1, 5).scan(10, (next, total) -> total * next)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testCollectObservable() {
         Observable.range(1, 5).collect(
+                ArrayList::new,
+                ArrayList::add)
+                .subscribe(System.out::println);
+    }
+
+    @Test
+    public void testCollectFlowable() {
+        Flowable.range(1, 5).collect(
                 ArrayList::new,
                 ArrayList::add)
                 .subscribe(System.out::println);
