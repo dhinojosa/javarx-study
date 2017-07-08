@@ -34,12 +34,15 @@ public class ObservableMathematicalAggregateTest {
 
     @Test
     public void testReduceObservable() {
-        Observable.range(1, 5).reduce((total, next) -> {
+        Maybe<Integer> reduce =
+                Observable.range(1, 5).reduce((total, next) -> {
             System.out.print("next:" + next);
             System.out.print(" ");
             System.out.println("total:" + total);
             return total * next;
-        }).subscribe(System.out::println);
+        });
+
+        reduce.subscribe(System.out::println);
     }
 
     @Test

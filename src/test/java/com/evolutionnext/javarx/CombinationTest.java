@@ -1,6 +1,8 @@
 package com.evolutionnext.javarx;
 
 import io.reactivex.Observable;
+import io.reactivex.observers.TestObserver;
+import io.reactivex.subscribers.TestSubscriber;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -29,9 +31,9 @@ public class CombinationTest {
                 .map(x -> {
                     return "O2:" + x;});
 
-        observable1.mergeWith(observable2).take(5)
+        observable1.mergeWith(observable2)
                 .subscribe(System.out::println);
-        Thread.sleep(1000);
+        Thread.sleep(10000);
     }
 
     @Test
@@ -61,19 +63,27 @@ public class CombinationTest {
         Thread.sleep(10000);
     }
 
+    @Test
+    public void testZip() throws InterruptedException {
+        Observable<String> interval1 = Observable.fromArray("Naan", "Milk", "Sugar", "Beets");
+        Observable<Integer> interval2 = Observable.range(1, Integer.MAX_VALUE);
+        Observable<String> zipped = interval1.zipWith(interval2, (string1, aLong2) -> aLong2 + ". " + string1);
+        zipped.subscribe(x -> System.out.println("x1 = " + x));
+        zipped.subscribe(x -> System.out.println("x2 = " + x));
+        TestObserver<String> testObserver = new TestObserver<>();
+        zipped.subscribe(testObserver);
+        testObserver.assertValues("1. Naan", "2. Milk", "3. Sugar", "4. Beets");
+        Thread.sleep(10000);
+    }
 
     @Test
-    public void testAmbWith() throws InterruptedException {
-        Observable<Integer> oneTo10 = Observable.range(1, 10)
-                .delay(5, TimeUnit.SECONDS);
-        Observable<Integer> tenTo20 = Observable.range(30, 10)
-                .delay(2, TimeUnit.SECONDS);
-        Observable<Integer> twentyTo30 = Observable.range(90, 10)
-                .delay(8, TimeUnit.SECONDS);
-
-        oneTo10.ambWith(tenTo20).ambWith(twentyTo30)
-                .subscribe(System.out::println, Throwable::printStackTrace);
-
-        Thread.sleep(10000);
+    public void testSwitchOnNext() throws InterruptedException {
+        Observable<Observable<String>> strings = Observable.range(0, 10)
+                                                           .map(c -> Observable.range(0, 10)
+                                                                               .delay(2, TimeUnit.MILLISECONDS)
+                                                                               .map(d -> c + "" + d));
+        Observable<String> stringObservable = Observable.switchOnNext(strings);
+        stringObservable.subscribe(System.out::println);
+        Thread.sleep(4000);
     }
 }

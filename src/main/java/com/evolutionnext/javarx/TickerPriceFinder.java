@@ -18,7 +18,8 @@ public class TickerPriceFinder {
     private final ExecutorService executorService;
     private final Random random;
 
-    public TickerPriceFinder(Random random, ExecutorService executorService) {
+    public TickerPriceFinder(Random random,
+                             ExecutorService executorService) {
         this.random = random;
         this.executorService = executorService;
     }

@@ -17,9 +17,11 @@ public class ObservableBackpressureTest {
 
     @Before
     public void startUp() {
-        crazedObservable = Observable.create(new ObservableOnSubscribe<Integer>() {
+        crazedObservable = Observable.create
+                (new ObservableOnSubscribe<Integer>() {
             @Override
-            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
+            public void subscribe(ObservableEmitter<Integer> e)
+                    throws Exception {
                 int i = 0;
                 //noinspection InfiniteLoopStatement
                 while (true) {
@@ -79,7 +81,8 @@ public class ObservableBackpressureTest {
     }
 
     @Test
-    public void testBackPressureObservable() throws InterruptedException {
+    public void testBackPressureObservable()
+            throws InterruptedException {
         crazedObservable
                 .observeOn(Schedulers.newThread())
                 .subscribe(n -> {
@@ -94,7 +97,7 @@ public class ObservableBackpressureTest {
     }
 
     @Test
-    public void testBackPressureFlowableNoBackPressure() throws InterruptedException {
+    public void testBackPressureFlowableError() throws InterruptedException {
         crazedFlowableError
                 .observeOn(Schedulers.newThread())
                 .subscribe(n -> {

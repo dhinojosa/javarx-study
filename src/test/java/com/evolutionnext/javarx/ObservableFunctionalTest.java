@@ -3,11 +3,18 @@ package com.evolutionnext.javarx;
 import com.sun.tools.javac.comp.Flow;
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.flowables.GroupedFlowable;
 import io.reactivex.functions.Function;
 import io.reactivex.observables.GroupedObservable;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 
 
 /**
@@ -69,13 +76,16 @@ public class ObservableFunctionalTest {
     @Test
     public void testBasicGroupByObservable() throws InterruptedException {
         Observable<GroupedObservable<String, Integer>> grouped =
-                Observable.range(1, 100).groupBy(integer -> {
+                Observable.range(1, 100)
+                          .groupBy(integer -> {
                     if (integer % 2 == 0) return "Even";
                     else return "Odd";
                 });
 
         grouped.subscribe(g -> {
-            g.subscribe(x -> System.out.println("g:" + g.getKey() + ", value:" + x));
+            g.subscribe(x ->
+                    System.out.println
+                            ("g:" + g.getKey() + ", value:" + x));
         });
 
         Thread.sleep(4000);
@@ -83,15 +93,33 @@ public class ObservableFunctionalTest {
 
     @Test
     public void testBasicGroupByFlowable() throws InterruptedException {
-        Flowable<GroupedFlowable<String, Integer>> grouped =
+        Flowable<GroupedFlowable<String, Integer>> groupedFlowable =
                 Flowable.range(1, 100).groupBy(integer -> {
                     if (integer % 2 == 0) return "Even";
                     else return "Odd";
                 });
 
-        grouped.subscribe(g -> {
+        groupedFlowable.subscribe(g -> {
             g.subscribe(x -> System.out.println("g:" + g.getKey() + ", value:" + x));
         });
         Thread.sleep(4000);
+    }
+
+    @Test
+    public void testBasicGroupByFlowableReduceIntoMultiMap() throws InterruptedException {
+        Flowable<GroupedFlowable<String, Integer>> groupedFlowable =
+                Flowable.range(1, 100).groupBy(integer -> {
+                    if (integer % 2 == 0) return "Even";
+                    else return "Odd";
+                });
+
+        Map<String, Single<List<Integer>>> result = new HashMap<>();
+
+        groupedFlowable.subscribe(g -> {
+            result.put(g.getKey(), g.toList());
+        });
+
+        System.out.println(result.get("Even").blockingGet());
+        System.out.println(result.get("Odd").blockingGet());
     }
 }

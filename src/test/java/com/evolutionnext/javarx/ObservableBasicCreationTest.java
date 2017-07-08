@@ -8,16 +8,22 @@ import org.reactivestreams.Subscription;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 public class ObservableBasicCreationTest {
 
     //Demo 1: Create a Flowable
     @Test
     public void testFlowable() {
-        Flowable<Integer> flowable = Flowable.create(new FlowableOnSubscribe<Integer>() {
+        Flowable<Integer> flowable = Flowable.create
+                (new FlowableOnSubscribe<Integer>() {
             @Override
-            public void subscribe(FlowableEmitter<Integer> flowableEmitter) throws Exception {
+            public void subscribe(FlowableEmitter<Integer>
+                                           flowableEmitter)
+                                           throws Exception {
                 System.out.println
                         ("1:" + Thread.currentThread().getName());
                 System.out.println("Starting the call");
@@ -30,7 +36,10 @@ public class ObservableBasicCreationTest {
         System.out.println("Flowable Created");
         System.out.println("2:" + Thread.currentThread().getName());
 
-        flowable.subscribe(new org.reactivestreams.Subscriber<Integer>() {
+        //Few hundred.
+
+        flowable.subscribe(
+                new org.reactivestreams.Subscriber<Integer>() {
             @Override
             public void onSubscribe(Subscription subscription) {
                 subscription.request(5);
@@ -58,10 +67,13 @@ public class ObservableBasicCreationTest {
     @Test
     public void testManualObservableWithManualObserverSimplified() {
         Observable<Integer> a = Observable.create(
-                s -> {
-                    s.onNext(40);
-                    s.onNext(45);
-                    s.onComplete();
+                new ObservableOnSubscribe<Integer>() {
+                    @Override
+                    public void subscribe(ObservableEmitter<Integer> s) throws Exception {
+                        s.onNext(40);
+                        s.onNext(45);
+                        s.onComplete();
+                    }
                 }
         );
 
@@ -97,7 +109,9 @@ public class ObservableBasicCreationTest {
                     s.onNext(45);
                     s.onComplete();
                 }
-        ).subscribe(System.out::println);
+        ).subscribe(System.out::println,
+                Throwable::printStackTrace,
+                () -> System.out.println("Completed"));
     }
 
 
@@ -192,6 +206,40 @@ public class ObservableBasicCreationTest {
         Thread.sleep(2000);
     }
 
+
+    @Test
+    public void testBasicSingleCompletelySimplified() throws InterruptedException {
+        Single.just(40).subscribe(System.out::println,
+                Throwable::printStackTrace); //No completed
+        Thread.sleep(2000);
+    }
+
+    @Test
+    public void testBasicMaybeCompletelySimplified() throws InterruptedException {
+        Maybe.<Integer>empty().subscribe(new MaybeObserver<Integer>() {
+                                             @Override
+                                             public void onSubscribe(Disposable d) {
+
+                                             }
+
+                                             @Override
+                                             public void onSuccess(Integer integer) {
+
+                                             }
+
+                                             @Override
+                                             public void onError(Throwable e) {
+
+                                             }
+
+                                             @Override
+                                             public void onComplete() {
+
+                                             }
+                                         });
+                Thread.sleep(2000);
+    }
+
     @Test
     public void testMap() {
         Observable<Integer> integerObservable =
@@ -210,8 +258,8 @@ public class ObservableBasicCreationTest {
         Observable<Integer> a =
                 Observable.just(50, 100, 122);
         Observable<Integer> b =
-                a.flatMap(x -> Observable.just(x - 1, x, x + 1));
-
+                a.flatMap(x ->
+                        Observable.just(x - 1, x, x + 1));
         b.subscribe(System.out::println);
         System.out.println("-----------");
         Thread.sleep(2000);
@@ -225,15 +273,12 @@ public class ObservableBasicCreationTest {
                 Executors.newCachedThreadPool();
 
         Future<Integer> future = executorService.submit(
-                new Callable<Integer>() {
-                    @Override
-                    public Integer call() throws Exception {
-                        System.out.println
-                                ("Thread name in future" +
-                                        Thread.currentThread().getName());
-                        Thread.sleep(1000);
-                        return 19;
-                    }
+                () -> {
+                    System.out.println
+                            ("Thread name in future" +
+                                    Thread.currentThread().getName());
+                    Thread.sleep(1000);
+                    return 19;
                 });
 
         Observable.fromFuture(future).map(x -> x + 30)
@@ -246,7 +291,9 @@ public class ObservableBasicCreationTest {
     @Test
     public void testInterval() throws InterruptedException {
         Observable<String> interval =
-                Observable.interval(1, TimeUnit.SECONDS).map(Long::toHexString);
+                Observable.interval
+                        (1, TimeUnit.SECONDS)
+                          .map(Long::toHexString);
 
         interval.subscribe(lng ->
                 System.out.println("1: lng = " + lng));
@@ -319,17 +366,17 @@ public class ObservableBasicCreationTest {
                 "It's alive! #ScalaExercises V.2. Free community tool for learning #Scala. #OpenSource",
                 "For any #clojure nerds playing with #ethereum my library Cloth now also creates an API for your Smart Contract"};
 
-
         Observable<HashTag> hashTags = Observable
                 .fromArray(tweets)
                 .flatMap(x -> Observable.fromArray(x.split(" ")))
                 .filter(x -> x.startsWith("#"))
-                .map(HashTag::new);
+                .map((tag) -> new HashTag(tag));
 
 
         hashTags
                 .collect(ArrayList::new,
-                        ArrayList::add).subscribe(System.out::println);
+                        ArrayList::add)
+                .subscribe(System.out::println);
 
 //        //Another Branch
         Single<List<HashTag>> listObservable = hashTags.toSortedList();
@@ -342,6 +389,7 @@ public class ObservableBasicCreationTest {
 
             @Override
             public void onSuccess(List<HashTag> hashTags) {
+
                 System.out.println(hashTags);
             }
 

@@ -13,6 +13,11 @@ import java.util.concurrent.Executors;
 public class ObservableAdvancedCreationTest {
 
     @Test
+    public void createFromCallable() {
+        Observable.fromCallable(() -> "Foo").subscribe(x -> System.out.println("x = " + x));
+    }
+
+    @Test
     public void createObservableFromFuture() throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         Observable<Integer> integerObservable = Observable.fromFuture(

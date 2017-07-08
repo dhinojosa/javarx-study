@@ -1,6 +1,7 @@
 package com.evolutionnext.javarx;
 
 import io.reactivex.Observable;
+import io.reactivex.Scheduler;
 import io.reactivex.schedulers.Schedulers;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,8 +47,8 @@ public class SchedulerTest {
                 Thread.currentThread().getName());
 
         source.subscribe(i ->
-                System.out.format("Received %d on threadName:%s\n", i,
-                        Thread.currentThread().getName()),
+                        System.out.format("Received %d on threadName:%s\n", i,
+                                Thread.currentThread().getName()),
                 Throwable::printStackTrace,
                 () -> System.out.format("Completed on threadName:%s\n",
                         Thread.currentThread().getName()));
@@ -59,33 +60,46 @@ public class SchedulerTest {
 
     @Test
     public void testMultithreadedWithSubscribeOnScheduler() throws InterruptedException {
-        System.out.format("Starting on threadName:%s\n",
-                Thread.currentThread().getName());
-        source
-                .subscribeOn(Schedulers.newThread())
-                .subscribe(i ->
-                        System.out.format("Received %d on threadName:%s\n",
-                                i, Thread.currentThread().getName()),
-                Throwable::printStackTrace,
-                () -> System.out.format("Completed on threadName:%s\n",
-                        Thread.currentThread().getName()));
+        System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
+        source.doOnNext(x -> System.out.format("Source on thread: %s\n", Thread.currentThread().getName()))
+              .subscribeOn(Schedulers.newThread())
+              .map(x -> x + 1)
+              .doOnNext(x -> System.out.format("Map on thread: %s\n", Thread.currentThread().getName()))
+              .subscribe(i -> System.out.format("Received %d on threadName:%s\n", i, Thread.currentThread().getName()),
+                      Throwable::printStackTrace,
+                      () -> System.out.format("Completed on threadName:%s\n", Thread.currentThread().getName()));
 
-        System.out.format("Ending on threadName:%s\n",
-                Thread.currentThread().getName());
+        System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
         Thread.sleep(2000);
     }
 
     @Test
-    public void testMultithreadedWithObserveOn() throws InterruptedException {
+    public void testMultithreadedWithObserveOnScheduler() throws InterruptedException {
         System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
-        source.subscribeOn(Schedulers.newThread())
-                .observeOn(Schedulers.computation())
-                .subscribe(i ->
-                                System.out.format("OnNext %d on threadName:%s\n",
-                                        i, Thread.currentThread().getName()),
-                        Throwable::printStackTrace,
-                        () -> System.out.format("Completed on threadName:%s\n",
-                                Thread.currentThread().getName()));
+        source.doOnNext(x -> System.out.format("Source on thread: %s\n", Thread.currentThread().getName()))
+              .observeOn(Schedulers.newThread())
+              .map(x -> x + 1)
+              .doOnNext(x -> System.out.format("Map on thread: %s\n", Thread.currentThread().getName()))
+              .subscribe(i -> System.out.format("Received %d on threadName:%s\n", i, Thread.currentThread().getName()),
+                      Throwable::printStackTrace,
+                      () -> System.out.format("Completed on threadName:%s\n", Thread.currentThread().getName()));
+
+        System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
+        Thread.sleep(2000);
+    }
+
+    @Test
+    public void testMultithreadedWithSubscribeLongAfterTheFact() throws InterruptedException {
+        ExecutorService executorService = Executors.newCachedThreadPool();
+        System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
+        source.doOnNext(x -> System.out.format("Source on thread: %s\n", Thread.currentThread().getName()))
+              .observeOn(Schedulers.newThread())
+              .map(x -> x + 1)
+              .doOnNext(x -> System.out.format("Map on thread: %s\n", Thread.currentThread().getName()))
+              .subscribeOn(Schedulers.from(executorService))
+              .subscribe(i -> System.out.format("Received %d on threadName:%s\n", i, Thread.currentThread().getName()),
+                      Throwable::printStackTrace,
+                      () -> System.out.format("Completed on threadName:%s\n", Thread.currentThread().getName()));
 
         System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
         Thread.sleep(2000);
