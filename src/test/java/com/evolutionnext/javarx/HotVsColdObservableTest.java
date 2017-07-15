@@ -15,7 +15,8 @@ public class HotVsColdObservableTest {
 
     @Test
     public void testColdObservable() throws InterruptedException {
-        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS).map(x -> x + 1);
+        Observable<Long> observable = Observable.interval(1, TimeUnit.SECONDS)
+                                                .map(x -> x + 1);
         observable
                 .subscribe(x -> System.out.println("Observer 1: " + x));
         Thread.sleep(1000);
@@ -81,31 +82,6 @@ public class HotVsColdObservableTest {
         Flowable<Long> flowable = Flowable
                 .interval(1, TimeUnit.SECONDS)
                 .map(x -> x + 1);
-
-
-        flowable.subscribe(new Subscriber<Long>() {
-            public Subscription s;
-
-            @Override
-            public void onSubscribe(Subscription s) {
-                this.s = s;
-            }
-
-            @Override
-            public void onNext(Long aLong) {
-               s.request(10);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-
-            }
-
-            @Override
-            public void onComplete() {
-
-            }
-        });
         Flowable<Long> longObservable = flowable
                 .publish().autoConnect();
         Thread.sleep(4000);

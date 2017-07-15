@@ -67,13 +67,10 @@ public class ObservableBasicCreationTest {
     @Test
     public void testManualObservableWithManualObserverSimplified() {
         Observable<Integer> a = Observable.create(
-                new ObservableOnSubscribe<Integer>() {
-                    @Override
-                    public void subscribe(ObservableEmitter<Integer> s) throws Exception {
-                        s.onNext(40);
-                        s.onNext(45);
-                        s.onComplete();
-                    }
+                s -> {
+                    s.onNext(40);
+                    s.onNext(45);
+                    s.onComplete();
                 }
         );
 
@@ -143,20 +140,19 @@ public class ObservableBasicCreationTest {
 
     @Test
     public void testManualObservableWithLambdaActions() {
-        Observable<Integer> a = Observable.create(new ObservableOnSubscribe<Integer>() {
-
-            @Override
-            public void subscribe(ObservableEmitter<Integer> e) throws Exception {
-                e.onNext(40);
-                e.onNext(45);
-                e.onComplete();
-            }
+        Observable<Integer> a = Observable.create(e -> {
+            System.out.println("In Observale:" + Thread.currentThread().getName());
+            e.onNext(40);
+            e.onNext(45);
+            e.onComplete();
         });
 
         a.subscribe(
                 integer -> {
+                    System.out.println("In Sub1:" + Thread.currentThread().getName());
                     System.out.println("Received: " + integer);
                     throw new IllegalArgumentException("Oh no");
+
                 },
                 e -> {
                     e.printStackTrace();
@@ -166,7 +162,8 @@ public class ObservableBasicCreationTest {
 
         a.subscribe(System.out::println,
                 e -> {
-                    System.out.println("Inside of 2nd Sub");
+                    System.out.println("In Sub2:" + Thread.currentThread().getName());
+                    System.out.println("Exception Inside of 2nd Sub");
                     e.printStackTrace();
                 },
                 () -> System.out.println("Completed"));
@@ -281,9 +278,14 @@ public class ObservableBasicCreationTest {
                     return 19;
                 });
 
-        Observable.fromFuture(future).map(x -> x + 30)
-                .repeat(5)
-                .subscribe(System.out::println);
+        Observable<Integer> observable = Observable.fromFuture(future);
+
+        observable.map(x -> x + 30)
+                  .repeat(5)
+                  .subscribe(System.out::println);
+
+        observable.flatMap(x -> Observable.just(x + 40, x + 50))
+                  .subscribe(System.out::println);
 
         Thread.sleep(15000);
     }
@@ -370,7 +372,7 @@ public class ObservableBasicCreationTest {
                 .fromArray(tweets)
                 .flatMap(x -> Observable.fromArray(x.split(" ")))
                 .filter(x -> x.startsWith("#"))
-                .map((tag) -> new HashTag(tag));
+                .map(HashTag::new);
 
 
         hashTags

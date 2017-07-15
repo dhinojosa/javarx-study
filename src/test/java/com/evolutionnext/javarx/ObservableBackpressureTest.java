@@ -43,6 +43,7 @@ public class ObservableBackpressureTest {
             }
         }, BackpressureStrategy.ERROR);
 
+
         crazedFlowableBackPressuredDrop = Flowable.create(new FlowableOnSubscribe<Integer>() {
             @Override
             public void subscribe(FlowableEmitter<Integer> e) throws Exception {
@@ -154,51 +155,4 @@ public class ObservableBackpressureTest {
                 }, Throwable::printStackTrace);
         Thread.sleep(10000);
     }
-
-
-//    @Test
-//    public void testBackPressureWithOnBackPressureBuffer() throws InterruptedException {
-//        crazedObservable.onBackpressureBuffer()
-//                .observeOn(Schedulers.newThread()).subscribe(n -> {
-//            try {
-//                Thread.sleep(5); //Wait to fill the buffer some more.
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            System.out.println(n);
-//        }, Throwable::printStackTrace);
-//        Thread.sleep(10000);
-//    }
-//
-//    @Test
-//    public void testBackPressureWithOnBackpressureDrop() throws InterruptedException {
-//        crazedObservable.onBackpressureDrop()
-//                .observeOn(Schedulers.newThread())
-//                .subscribe(n -> {
-//                    try {
-//                        Thread.sleep(5); //Wait to fill the buffer some more.
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
-//                    System.out.println(n);
-//                }, Throwable::printStackTrace);
-//
-//        Thread.sleep(10000);
-//    }
-//
-//    @Test
-//    public void testBackPressureWithOnBackpressureLatest() throws InterruptedException {
-//        crazedObservable.onBackpressureLatest()
-//                .observeOn(Schedulers.newThread())
-//                .subscribeOn(Schedulers.newThread()).subscribe(n -> {
-//            try {
-//                Thread.sleep(5); //Wait to fill the buffer some more.
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
-//            System.out.println(n);
-//        }, Throwable::printStackTrace);
-//
-//        Thread.sleep(10000);
-//    }
 }
