@@ -4,13 +4,9 @@ import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import org.junit.Test;
-import rx.observables.MathObservable;
 
 import java.util.ArrayList;
 
-/**
- * The following tests require the rxjava-math package
- */
 public class ObservableMathematicalAggregateTest {
 
     @Test

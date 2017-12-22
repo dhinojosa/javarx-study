@@ -18,18 +18,14 @@ public class ObservableBackpressureTest {
     @Before
     public void startUp() {
         crazedObservable = Observable.create
-                (new ObservableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(ObservableEmitter<Integer> e)
-                    throws Exception {
-                int i = 0;
-                //noinspection InfiniteLoopStatement
-                while (true) {
-                    e.onNext(i);
-                    i++;
-                }
-            }
-        });
+                (e -> {
+                    int i = 0;
+                    //noinspection InfiniteLoopStatement
+                    while (true) {
+                        e.onNext(i);
+                        i++;
+                    }
+                });
 
         crazedFlowableError = Flowable.create(new FlowableOnSubscribe<Integer>() {
             @Override
@@ -114,7 +110,8 @@ public class ObservableBackpressureTest {
 
     @Test
     public void testBackPressureWithDropFlowable() throws InterruptedException {
-        crazedFlowableBackPressuredDrop.observeOn(Schedulers.newThread())
+        crazedFlowableBackPressuredDrop
+                .observeOn(Schedulers.newThread())
                 .subscribe(n -> {
                     try {
                         Thread.sleep(5); //Wait to fill the buffer some more.
