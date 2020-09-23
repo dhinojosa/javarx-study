@@ -1,13 +1,8 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.observables.ConnectableObservable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.Test;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.util.concurrent.TimeUnit;
 
@@ -23,9 +18,9 @@ public class HotVsColdObservableTest {
         observable
                 .subscribe(x -> System.out.println("Observer 1: " + x));
 
-        Thread.sleep(1000);
+        Thread.sleep(5000);
         observable.subscribe(x -> System.out.println("Observer 2: " + x));
-        Thread.sleep(10000);
+        Thread.sleep(25000);
     }
 
     @Test

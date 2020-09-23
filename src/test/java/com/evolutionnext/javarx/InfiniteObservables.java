@@ -1,14 +1,10 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Observable;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Cancellable;
-import io.reactivex.functions.Predicate;
-import io.reactivex.observers.DisposableObserver;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.DisposableObserver;
 import org.junit.Test;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.math.BigInteger;
 
@@ -19,27 +15,27 @@ public class InfiniteObservables {
     @Test
     public void testBadInfinitiveSameThread() throws Exception {
         Observable<BigInteger> counters = Observable.create(
-                subscriber -> {
-                    BigInteger i = ZERO;
-                    while (true) {
-                        subscriber.onNext(i);
-                        i = i.add(ONE);
-                    }
-                });
+            subscriber -> {
+                BigInteger i = ZERO;
+                while (true) {
+                    subscriber.onNext(i);
+                    i = i.add(ONE);
+                }
+            });
         counters.subscribe(System.out::println);
     }
 
     Observable<BigInteger> countersThread = Observable.create(
-            subscriber -> {
-                Runnable runnable = () -> {
-                    BigInteger i = ZERO;
-                    while (!(subscriber.isDisposed())) {
-                        subscriber.onNext(i);
-                        i = i.add(ONE);
-                    }
-                };
-                new Thread(runnable).start();
-            });
+        subscriber -> {
+            Runnable runnable = () -> {
+                BigInteger i = ZERO;
+                while (!(subscriber.isDisposed())) {
+                    subscriber.onNext(i);
+                    i = i.add(ONE);
+                }
+            };
+            new Thread(runnable).start();
+        });
 
     @Test
     public void testOkInfinitiveDifferentThread() throws Exception {
@@ -57,7 +53,8 @@ public class InfiniteObservables {
             @Override
             public void onNext(BigInteger bigInteger) {
                 System.out.println(bigInteger);
-                if (bigInteger.compareTo(new BigInteger("2000")) == 0) d.dispose();
+                if (bigInteger.compareTo(new BigInteger("2000")) == 0)
+                    d.dispose();
             }
 
             @Override
@@ -80,7 +77,8 @@ public class InfiniteObservables {
             @Override
             public void onNext(BigInteger bigInteger) {
                 System.out.println(bigInteger);
-                if (bigInteger.compareTo(new BigInteger("2000")) == 0) dispose();
+                if (bigInteger.compareTo(new BigInteger("2000")) == 0)
+                    dispose();
             }
 
             @Override
@@ -98,37 +96,38 @@ public class InfiniteObservables {
     }
 
     Observable<BigInteger> countersThreadListener = Observable.create(
-            subscriber -> {
-                Runnable runnable = () -> {
-                    BigInteger i = ZERO;
-                    while (!(subscriber.isDisposed())) {
-                        subscriber.onNext(i);
-                        i = i.add(ONE);
-                        try {
-                            Thread.sleep(20000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+        subscriber -> {
+            Runnable runnable = () -> {
+                BigInteger i = ZERO;
+                while (!(subscriber.isDisposed())) {
+                    subscriber.onNext(i);
+                    i = i.add(ONE);
+                    try {
+                        Thread.sleep(20000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                };
-                Thread thread = new Thread(runnable);
+                }
+            };
+            Thread thread = new Thread(runnable);
 
-                subscriber.setCancellable(() -> System.out.println("Cancelled"));
-                subscriber.setDisposable(new Disposable() {
-                    private boolean flag = false;
-                    @Override
-                    public void dispose() {
-                        System.out.println("Disposed!");
-                        flag = true;
-                    }
+            subscriber.setCancellable(() -> System.out.println("Cancelled"));
+            subscriber.setDisposable(new Disposable() {
+                private boolean flag = false;
 
-                    @Override
-                    public boolean isDisposed() {
-                        return flag;
-                    }
-                });
-                thread.start();
+                @Override
+                public void dispose() {
+                    System.out.println("Disposed!");
+                    flag = true;
+                }
+
+                @Override
+                public boolean isDisposed() {
+                    return flag;
+                }
             });
+            thread.start();
+        });
 
     @Test
     public void testCountThreadsListenerWithoutWaitingThatLong() throws Exception {

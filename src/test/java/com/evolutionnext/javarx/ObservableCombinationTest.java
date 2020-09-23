@@ -1,10 +1,13 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.BiFunction;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.subscribers.TestSubscriber;
+
+import io.reactivex.rxjava3.annotations.NonNull;
+import io.reactivex.rxjava3.observers.TestObserver;
 import org.junit.Test;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import org.reactivestreams.Subscription;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
@@ -143,7 +146,8 @@ public class ObservableCombinationTest {
     public void testWithLatestFromWithDummy() throws InterruptedException {
         Observable<String> observable1 =
                 Observable.interval(1500, TimeUnit.MILLISECONDS)
-                          .map(x -> "T1:" + x).startWith("Not yet");
+                          .map(x -> "T1:" + x).startWith(
+                              Single.create(emitter -> emitter.onSuccess("Not Yet")));
         Observable<String> observable2 =
                 Observable.interval(100, TimeUnit.MILLISECONDS)
                           .map(x -> "T2:" + x);

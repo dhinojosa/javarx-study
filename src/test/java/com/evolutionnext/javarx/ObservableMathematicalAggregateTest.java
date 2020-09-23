@@ -1,8 +1,8 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Observable;
 import org.junit.Test;
 
 import java.util.ArrayList;

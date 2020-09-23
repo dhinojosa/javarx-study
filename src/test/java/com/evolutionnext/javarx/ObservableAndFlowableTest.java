@@ -1,9 +1,9 @@
 package com.evolutionnext.javarx;
-
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.subscribers.TestSubscriber;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import org.junit.Test;
 
 public class ObservableAndFlowableTest {

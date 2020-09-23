@@ -1,11 +1,11 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Flowable;
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
-import io.reactivex.Single;
-import io.reactivex.flowables.GroupedFlowable;
-import io.reactivex.observables.GroupedObservable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.flowables.GroupedFlowable;
+import io.reactivex.rxjava3.observables.GroupedObservable;
 import org.junit.Test;
 
 import java.util.HashMap;

@@ -1,7 +1,7 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Observable;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.assertj.core.util.Lists;
 import org.junit.Test;
 
@@ -21,11 +21,11 @@ public class ObservableAdvancedCreationTest {
     public void createObservableFromFuture() throws InterruptedException {
         ExecutorService executorService = Executors.newFixedThreadPool(4);
         Observable<Integer> integerObservable = Observable.fromFuture(
-                executorService.submit(() -> {
-                    System.out.println("In Observable:" + Thread.currentThread().getName());
-                    Thread.sleep(4000);
-                    return 40 + 100;
-                }));
+            executorService.submit(() -> {
+                System.out.println("In Observable:" + Thread.currentThread().getName());
+                Thread.sleep(4000);
+                return 40 + 100;
+            }));
 
         System.out.println("Now that that's running....");
 
@@ -36,7 +36,7 @@ public class ObservableAdvancedCreationTest {
 
         Thread.sleep(1000);
         integerObservable.subscribe(x -> {
-             System.out.println("Recieved 2: " + x);
+            System.out.println("Recieved 2: " + x);
         });
 
         Thread.sleep(10000);
@@ -45,8 +45,9 @@ public class ObservableAdvancedCreationTest {
     @Test
     public void createObservableFromIterable() {
         List<Integer> numberOfItems = Lists
-                .newArrayList(3,5,3,1,4,5,6,8,4,5,2,1,5,3,2);
-        Observable<Integer> integerObservable = Observable.fromIterable(numberOfItems);
+            .newArrayList(3, 5, 3, 1, 4, 5, 6, 8, 4, 5, 2, 1, 5, 3, 2);
+        Observable<Integer> integerObservable =
+            Observable.fromIterable(numberOfItems);
 
         integerObservable.subscribe(x -> {
             System.out.println("In Subscription: " + Thread.currentThread().getName());
@@ -57,8 +58,9 @@ public class ObservableAdvancedCreationTest {
     @Test
     public void createObservableFromArrays() {
         Integer[] numberOfItems =
-                new Integer[]{4, 3, 1, 4, 5, 3, 1, 10, 40, 110, 44};
-        Observable<Integer> integerObservable = Observable.fromArray(numberOfItems);
+            new Integer[]{4, 3, 1, 4, 5, 3, 1, 10, 40, 110, 44};
+        Observable<Integer> integerObservable =
+            Observable.fromArray(numberOfItems);
         integerObservable.subscribe(x -> {
             System.out.println("In Subscription: " + Thread.currentThread().getName());
             System.out.println("Received:" + x);
@@ -81,7 +83,7 @@ public class ObservableAdvancedCreationTest {
     @Test
     public void createObservableError() throws InterruptedException {
         Observable<Integer> error = Observable
-                .error(new IllegalArgumentException("This just ain't right"));
+            .error(new IllegalArgumentException("This just ain't right"));
         error.subscribe(System.out::println, Throwable::printStackTrace);
         Thread.sleep(2000);
     }

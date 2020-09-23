@@ -1,19 +1,15 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.Scheduler;
-import io.reactivex.observers.TestObserver;
-import io.reactivex.schedulers.Schedulers;
-import io.reactivex.schedulers.TestScheduler;
-import io.reactivex.subscribers.TestSubscriber;
+
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.observers.TestObserver;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
+import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import org.junit.Before;
 import org.junit.Test;
-//import rx.Observable;
-//import rx.Scheduler;
-//import rx.Subscriber;
-//import rx.schedulers.Schedulers;
 
+import io.reactivex.rxjava3.core.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +23,7 @@ public class SchedulerTest {
      * Setting up a basic Observable for the two tests
      */
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         source = Observable.create(
                 o -> {
                     System.out.format(
@@ -51,12 +47,12 @@ public class SchedulerTest {
         System.out.format("Starting on threadName:%s\n",
                 Thread.currentThread().getName());
 
-        source.subscribe(i ->
-                        System.out.format("Received %d on threadName:%s\n", i,
-                                Thread.currentThread().getName()),
-                Throwable::printStackTrace,
-                () -> System.out.format("Completed on threadName:%s\n",
-                        Thread.currentThread().getName()));
+        Disposable disposable = source.subscribe(i ->
+                System.out.format("Received %d on threadName:%s\n", i,
+                    Thread.currentThread().getName()),
+            Throwable::printStackTrace,
+            () -> System.out.format("Completed on threadName:%s\n",
+                Thread.currentThread().getName()));
 
         System.out.format("Ending on threadName:%s\n",
                 Thread.currentThread().getName());
@@ -66,19 +62,21 @@ public class SchedulerTest {
     @Test
     public void testMultithreadedWithSubscribeOnScheduler() throws InterruptedException {
         System.out.format("Starting on threadName:%s\n", Thread.currentThread().getName());
-        source.doOnNext(x ->
-                System.out.format("Source on thread: %s\n",
-                        Thread.currentThread().getName()))
-              .subscribeOn(Schedulers.newThread())
-              .map(x -> x + 1)
-              .doOnNext(x ->
-                      System.out.format("Map on thread: %s\n",
-                              Thread.currentThread().getName()))
-              .subscribe(i -> System.out.format("Received %d on threadName:%s\n", i,
-                      Thread.currentThread().getName()),
-                      Throwable::printStackTrace,
-                      () -> System.out.format("Completed on threadName:%s\n",
-                              Thread.currentThread().getName()));
+        Disposable subscribe = source.doOnNext(x ->
+            System.out.format("Source on thread: %s\n",
+                Thread.currentThread().getName()))
+                                     .subscribeOn(Schedulers.newThread())
+                                     .map(x -> x + 1)
+                                     .doOnNext(x ->
+                                         System.out.format("Map on thread: " +
+                                                 "%s\n",
+                                             Thread.currentThread().getName()))
+                                     .subscribe(i -> System.out.format(
+                                         "Received %d on threadName:%s\n", i,
+                                         Thread.currentThread().getName()),
+                                         Throwable::printStackTrace,
+                                         () -> System.out.format("Completed on threadName:%s\n",
+                                             Thread.currentThread().getName()));
 
         System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
         Thread.sleep(2000);
@@ -97,6 +95,32 @@ public class SchedulerTest {
 
         System.out.format("Ending on threadName:%s\n", Thread.currentThread().getName());
         Thread.sleep(2000);
+    }
+
+    private void printCurrentThreadName(String marker) {
+        System.out.println(marker + ":" + Thread.currentThread().getName());
+    }
+
+    @Test
+    public void testWithRange() throws InterruptedException {
+        ExecutorService service = Executors.newCachedThreadPool();
+
+        Observable
+                .range(1, 1000000)                          //new thread
+                .doOnNext(x -> printCurrentThreadName("A")) //new-thread
+                .map(x -> x * 2)
+                .observeOn(Schedulers.from(service))
+                .doOnNext(x -> printCurrentThreadName("B")) //pool-thread
+                .flatMap(x -> Observable.just(-x, x, x+3))
+                .subscribeOn(Schedulers.newThread())
+                .doOnNext(x -> printCurrentThreadName("C")) //pool-thread
+                .filter(x -> x % 3 != 0)
+                .doOnNext(x -> printCurrentThreadName("D")) //pool-thread
+                .subscribe(System.out::println,
+                        Throwable::printStackTrace,
+                        ()-> System.out.println("Completed"));
+
+        Thread.sleep(40000);
     }
 
     @Test
@@ -137,7 +161,7 @@ public class SchedulerTest {
     }
 
     @Test
-    public void testSchedulerWithObservable() throws Exception {
+    public void testSchedulerWithObservable() {
         TestScheduler testScheduler = new TestScheduler();
         TestObserver<Long> testObserver = new TestObserver<>();
         Observable.interval(500, TimeUnit.MILLISECONDS,testScheduler)

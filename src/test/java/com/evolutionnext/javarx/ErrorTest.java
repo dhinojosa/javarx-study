@@ -1,8 +1,7 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.Function;
-import io.reactivex.observers.TestObserver;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableSource;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -24,7 +23,7 @@ public class ErrorTest {
     public void testOnErrorResumeNext() throws InterruptedException {
         Observable<Integer> observable = Observable.fromArray(1, 4, 5, 10, 11, 0, 9, 2);
         Observable<Integer> observable1 = observable.map(x -> 20 / x)
-                                                    .onErrorResumeNext(Observable.fromArray(3, 6));
+                                                    .onErrorResumeNext(t -> Observable.just(3,6));
         observable1.subscribe(System.out::println);
     }
 

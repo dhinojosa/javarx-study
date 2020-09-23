@@ -1,11 +1,8 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.*;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.junit.Test;
 import org.reactivestreams.Subscription;
 
@@ -179,22 +176,9 @@ public class ObservableBasicCreationTest {
                 }
         );
 
-        integerObservable.subscribe(new Consumer<Integer>() {
-            @Override
-            public void accept(Integer integer) throws Exception {
-                System.out.println(integer);
-            }
-        }, new Consumer<Throwable>() {
-            @Override
-            public void accept(Throwable throwable) throws Exception {
-                throwable.printStackTrace();
-            }
-        }, new Action() {
-            @Override
-            public void run() throws Exception {
-                System.out.println("Completed");
-            }
-        });
+        integerObservable.subscribe(System.out::println,
+            Throwable::printStackTrace,
+            () -> System.out.println("Completed"));
 
         integerObservable.map(x -> x + 90).subscribe(
                 System.out::println,

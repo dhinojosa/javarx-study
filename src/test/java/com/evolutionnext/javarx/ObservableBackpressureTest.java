@@ -1,7 +1,7 @@
 package com.evolutionnext.javarx;
 
-import io.reactivex.*;
-import io.reactivex.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.*;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -27,15 +27,12 @@ public class ObservableBackpressureTest {
                     }
                 });
 
-        crazedFlowableError = Flowable.create(new FlowableOnSubscribe<Integer>() {
-            @Override
-            public void subscribe(FlowableEmitter<Integer> e) throws Exception {
-                int i = 0;
-                //noinspection InfiniteLoopStatement
-                while (true) {
-                    e.onNext(i);
-                    i++;
-                }
+        crazedFlowableError = Flowable.create(e -> {
+            int i = 0;
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                e.onNext(i);
+                i++;
             }
         }, BackpressureStrategy.ERROR);
 
